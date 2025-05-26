@@ -4,6 +4,7 @@ import {
   raffles,
   raffleEntries,
   raffleWinners,
+  eventCompletions,
   type User,
   type UpsertUser,
   type Event,
@@ -13,6 +14,8 @@ import {
   type RaffleEntry,
   type InsertRaffleEntry,
   type RaffleWinner,
+  type EventCompletion,
+  type InsertEventCompletion,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, lt } from "drizzle-orm";

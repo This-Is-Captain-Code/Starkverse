@@ -80,11 +80,23 @@ export const raffleWinners = pgTable("raffle_winners", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Event completions table for SP rewards
+export const eventCompletions = pgTable("event_completions", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull().references(() => events.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  performanceScore: integer("performance_score").notNull(), // 1-100 score
+  spAwarded: integer("sp_awarded").notNull(),
+  rewardClaimed: boolean("reward_claimed").notNull().default(false),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   events: many(events),
   raffleEntries: many(raffleEntries),
   raffleWinners: many(raffleWinners),
+  eventCompletions: many(eventCompletions),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -93,6 +105,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     references: [users.id],
   }),
   raffles: many(raffles),
+  completions: many(eventCompletions),
 }));
 
 export const rafflesRelations = relations(raffles, ({ one, many }) => ({
@@ -122,6 +135,17 @@ export const raffleWinnersRelations = relations(raffleWinners, ({ one }) => ({
   }),
   user: one(users, {
     fields: [raffleWinners.userId],
+    references: [users.id],
+  }),
+}));
+
+export const eventCompletionsRelations = relations(eventCompletions, ({ one }) => ({
+  event: one(events, {
+    fields: [eventCompletions.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventCompletions.userId],
     references: [users.id],
   }),
 }));
@@ -159,3 +183,5 @@ export type Raffle = typeof raffles.$inferSelect;
 export type InsertRaffleEntry = z.infer<typeof insertRaffleEntrySchema>;
 export type RaffleEntry = typeof raffleEntries.$inferSelect;
 export type RaffleWinner = typeof raffleWinners.$inferSelect;
+export type EventCompletion = typeof eventCompletions.$inferSelect;
+export type InsertEventCompletion = typeof eventCompletions.$inferInsert;
