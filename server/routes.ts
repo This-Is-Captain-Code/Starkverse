@@ -450,6 +450,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear raffle data endpoint
+  app.post("/api/testing/clear-raffles", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.clearRaffleData();
+      res.json({ message: "All raffle entries and winners cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing raffle data:", error);
+      res.status(500).json({ message: "Failed to clear raffle data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

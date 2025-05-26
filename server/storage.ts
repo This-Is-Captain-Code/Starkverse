@@ -53,6 +53,9 @@ export interface IStorage {
   getUnclaimedRewards(userId: string): Promise<EventCompletion[]>;
   claimReward(completionId: number): Promise<User>;
   
+  // Reset operations
+  clearRaffleData(): Promise<void>;
+  
   // Statistics
   getStats(): Promise<{
     totalEvents: number;
@@ -294,6 +297,15 @@ export class DatabaseStorage implements IStorage {
 
     // Award the SP points to the user
     return await this.updateUserPoints(completion.userId, completion.spAwarded);
+  }
+
+  // Reset operations
+  async clearRaffleData(): Promise<void> {
+    // Clear all raffle winners first (due to foreign key constraints)
+    await db.delete(raffleWinners);
+    
+    // Clear all raffle entries
+    await db.delete(raffleEntries);
   }
 }
 
