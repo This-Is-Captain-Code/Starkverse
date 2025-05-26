@@ -137,6 +137,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create raffles for existing events (one-time setup)
+  app.post('/api/setup/create-raffles', isAuthenticated, async (req: any, res) => {
+    try {
+      const events = await storage.getEvents();
+      
+      for (const event of events) {
+        // Check if raffle already exists
+        const existingRaffle = await storage.getRaffleByEventId(event.id);
+        
+        if (!existingRaffle) {
+          // Create raffle ending 1 hour before event
+          const raffleEndTime = new Date(event.eventDate);
+          raffleEndTime.setHours(raffleEndTime.getHours() - 1);
+          
+          await storage.createRaffle({
+            eventId: event.id,
+            endTime: raffleEndTime,
+          });
+        }
+      }
+      
+      res.json({ message: "Raffles created successfully" });
+    } catch (error) {
+      console.error("Error creating raffles:", error);
+      res.status(500).json({ message: "Failed to create raffles" });
+    }
+  });
+
   // Dashboard routes
   app.get('/api/dashboard/my-events', isAuthenticated, async (req: any, res) => {
     try {
