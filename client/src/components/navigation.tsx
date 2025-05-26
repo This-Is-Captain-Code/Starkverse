@@ -24,6 +24,7 @@ export default function Navigation() {
     { href: "/", label: "Home" },
     { href: "/events", label: "Explore Events" },
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/rewards", label: "SP Rewards" },
     { href: "/testing", label: "Testing" },
   ];
 
