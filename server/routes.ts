@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/raffles/:id/enter', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const raffleId = parseInt(req.params.id);
+      const eventId = parseInt(req.params.id); // This is actually the event ID
 
       // Get user's current points
       const user = await storage.getUser(userId);
@@ -100,21 +100,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Get raffle and event details
-      const raffle = await db
-        .select({
-          raffle: raffles,
-          event: events,
-        })
-        .from(raffles)
-        .innerJoin(events, eq(raffles.eventId, events.id))
-        .where(eq(raffles.id, raffleId));
+      // Get event details
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
 
-      if (!raffle.length) {
+      // Get raffle for this event
+      const raffle = await storage.getRaffleByEventId(eventId);
+      if (!raffle) {
         return res.status(404).json({ message: "Raffle not found" });
       }
 
-      const { event } = raffle[0];
       const entryPoints = event.entryPoints;
 
       if (user.points < entryPoints) {
@@ -126,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add raffle entry
       const entry = await storage.addRaffleEntry({
-        raffleId,
+        raffleId: raffle.id,
         userId,
       });
 
@@ -184,6 +181,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching stats:", error);
       res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Check if user won a raffle
+  app.get('/api/raffle/:eventId/winner', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const eventId = parseInt(req.params.eventId);
+      
+      const raffle = await storage.getRaffleByEventId(eventId);
+      if (!raffle) {
+        return res.status(404).json({ message: "Raffle not found" });
+      }
+
+      const winners = await storage.getRaffleWinners(raffle.id);
+      const isWinner = winners.some(winner => winner.userId === userId);
+      
+      if (isWinner) {
+        const event = await storage.getEvent(eventId);
+        res.json({ 
+          isWinner: true, 
+          worldUrl: event?.worldUrl,
+          eventTitle: event?.title 
+        });
+      } else {
+        res.json({ isWinner: false });
+      }
+    } catch (error) {
+      console.error("Error checking winner status:", error);
+      res.status(500).json({ message: "Failed to check winner status" });
+    }
+  });
+
+  // Simulate raffle drawing (for demo purposes)
+  app.post('/api/raffle/:eventId/draw', isAuthenticated, async (req: any, res) => {
+    try {
+      const eventId = parseInt(req.params.eventId);
+      const userId = req.user.claims.sub;
+      
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      const raffle = await storage.getRaffleByEventId(eventId);
+      if (!raffle) {
+        return res.status(404).json({ message: "Raffle not found" });
+      }
+
+      // Get all entries for this raffle
+      const entries = await storage.getRaffleEntries(raffle.id);
+      
+      if (entries.length === 0) {
+        return res.status(400).json({ message: "No entries found" });
+      }
+
+      // For demo - randomly select winners
+      const maxWinners = Math.min(event.maxWinners, entries.length);
+      const winners = [];
+      const availableEntries = [...entries];
+      
+      for (let i = 0; i < maxWinners; i++) {
+        const randomIndex = Math.floor(Math.random() * availableEntries.length);
+        const winner = availableEntries[randomIndex];
+        winners.push(winner);
+        availableEntries.splice(randomIndex, 1);
+      }
+
+      // Store winners
+      for (const winner of winners) {
+        await storage.addRaffleWinner(raffle.id, winner.userId);
+      }
+
+      // End the raffle
+      await storage.endRaffle(raffle.id);
+
+      res.json({ 
+        winners: winners.length,
+        isWinner: winners.some(w => w.userId === userId)
+      });
+    } catch (error) {
+      console.error("Error drawing raffle:", error);
+      res.status(500).json({ message: "Failed to draw raffle" });
     }
   });
 

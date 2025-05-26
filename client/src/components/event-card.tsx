@@ -1,11 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Users, Coins, ExternalLink, Trophy } from "lucide-react";
+import { Calendar, Users, Coins, ExternalLink, Trophy, Crown } from "lucide-react";
 import { format } from "date-fns";
 
 interface EventCardProps {
@@ -28,6 +28,12 @@ export default function EventCard({ event, showPlatform = false }: EventCardProp
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check if user won this raffle
+  const { data: winnerStatus } = useQuery({
+    queryKey: [`/api/raffle/${event.id}/winner`],
+    enabled: !!user,
+  });
 
   const enterRaffleMutation = useMutation({
     mutationFn: async () => {
@@ -117,17 +123,11 @@ export default function EventCard({ event, showPlatform = false }: EventCardProp
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Coins className="h-4 w-4 text-accent" />
-              <span className="text-accent font-semibold">{event.entryPoints} SP</span>
+              <span className="text-accent font-semibold">{event.entryPoints} SP entry</span>
             </div>
-            <Button 
-              size="sm"
-              variant="outline"
-              onClick={() => window.open(event.worldUrl, '_blank')}
-              className="border-primary/50 hover:border-primary text-xs"
-            >
-              <ExternalLink className="mr-1 h-3 w-3" />
-              View World
-            </Button>
+            <div className="text-xs text-gray-400">
+              🏆 Win raffle to access
+            </div>
           </div>
         </div>
 
