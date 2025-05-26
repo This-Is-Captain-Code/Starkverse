@@ -71,7 +71,8 @@ export default function EventCard({ event, showPlatform = false }: EventCardProp
     return platform === "viveverse" ? "Viveverse" : "Meta Horizon Worlds";
   };
 
-  const canEnterRaffle = user && user.points >= event.entryPoints && event.status === "upcoming";
+  const canEnterRaffle = user && (user as any).points >= event.entryPoints && event.status === "upcoming";
+  const isWinner = winnerStatus?.isWinner;
 
   return (
     <Card className="bg-gradient-to-br from-dark-surface/50 to-dark-card/30 backdrop-blur-lg border-primary/20 hover:border-primary/50 transition-all duration-300 group">
@@ -125,14 +126,29 @@ export default function EventCard({ event, showPlatform = false }: EventCardProp
               <Coins className="h-4 w-4 text-accent" />
               <span className="text-accent font-semibold">{event.entryPoints} SP entry</span>
             </div>
-            <div className="text-xs text-gray-400">
-              🏆 Win raffle to access
-            </div>
+            {isWinner ? (
+              <div className="flex items-center space-x-1 text-yellow-400">
+                <Crown className="h-4 w-4" />
+                <span className="text-xs font-semibold">Winner!</span>
+              </div>
+            ) : (
+              <div className="text-xs text-gray-400">
+                🏆 Win raffle to access
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex gap-2">
-          {canEnterRaffle ? (
+          {isWinner ? (
+            <Button 
+              onClick={() => window.open((winnerStatus as any).worldUrl, '_blank')}
+              className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-medium text-sm"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Enter {getPlatformName(event.platform)}
+            </Button>
+          ) : canEnterRaffle ? (
             <Button 
               onClick={() => enterRaffleMutation.mutate()}
               disabled={enterRaffleMutation.isPending}
