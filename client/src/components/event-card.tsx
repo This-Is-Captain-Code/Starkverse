@@ -140,52 +140,22 @@ export default function EventCard({ event, showPlatform = false }: EventCardProp
         </div>
 
         <div className="flex gap-2">
-          {isWinner ? (
-            <Button 
-              onClick={() => window.open((winnerStatus as any).worldUrl, '_blank')}
-              className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-medium text-sm"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Enter {getPlatformName(event.platform)}
-            </Button>
-          ) : canEnterRaffle ? (
-            <Button 
-              onClick={() => enterRaffleMutation.mutate()}
-              disabled={enterRaffleMutation.isPending}
-              className="flex-1 bg-primary hover:bg-primary/80 text-sm"
-            >
-              {enterRaffleMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                  Entering...
-                </>
-              ) : (
-                <>
-                  <Trophy className="mr-2 h-4 w-4" />
-                  Enter Raffle
-                </>
-              )}
-            </Button>
-          ) : event.status === "ended" ? (
-            <Button disabled className="flex-1 text-sm">
-              Event Ended
-            </Button>
-          ) : event.status === "live" ? (
-            <Button disabled className="flex-1 text-sm bg-green-500/20 text-green-400">
-              Event Live
-            </Button>
-          ) : !user ? (
-            <Button 
-              onClick={() => window.location.href = "/api/login"}
-              className="flex-1 bg-secondary hover:bg-secondary/80 text-sm"
-            >
-              Login to Enter
-            </Button>
-          ) : (
-            <Button disabled className="flex-1 text-sm">
-              Insufficient Points
-            </Button>
-          )}
+          <Button 
+            onClick={() => window.location.href = `/event/${event.id}`}
+            className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-medium text-sm"
+          >
+            {isWinner ? (
+              <>
+                <Crown className="mr-2 h-4 w-4" />
+                View Event
+              </>
+            ) : (
+              <>
+                <Trophy className="mr-2 h-4 w-4" />
+                View Details
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
