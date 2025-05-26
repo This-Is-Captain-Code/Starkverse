@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Events from "@/pages/events";
 import EventDetails from "@/pages/event-details";
 import Dashboard from "@/pages/dashboard";
+import Rewards from "@/pages/rewards";
 import Testing from "@/pages/testing";
 import NotFound from "@/pages/not-found";
 import Navigation from "@/components/navigation";

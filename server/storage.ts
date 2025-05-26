@@ -47,6 +47,12 @@ export interface IStorage {
   addRaffleWinner(raffleId: number, userId: string): Promise<RaffleWinner>;
   getRaffleWinners(raffleId: number): Promise<RaffleWinner[]>;
   
+  // Event completion operations
+  addEventCompletion(completion: InsertEventCompletion): Promise<EventCompletion>;
+  getUserCompletions(userId: string): Promise<EventCompletion[]>;
+  getUnclaimedRewards(userId: string): Promise<EventCompletion[]>;
+  claimReward(completionId: number): Promise<User>;
+  
   // Statistics
   getStats(): Promise<{
     totalEvents: number;
@@ -237,6 +243,57 @@ export class DatabaseStorage implements IStorage {
       pointsDistributed: pointsSum.sum || 0,
       raffleWinners: winnersCount.count,
     };
+  }
+
+  // Event completion operations
+  async addEventCompletion(completion: InsertEventCompletion): Promise<EventCompletion> {
+    const [eventCompletion] = await db
+      .insert(eventCompletions)
+      .values(completion)
+      .returning();
+    return eventCompletion;
+  }
+
+  async getUserCompletions(userId: string): Promise<EventCompletion[]> {
+    return await db
+      .select()
+      .from(eventCompletions)
+      .where(eq(eventCompletions.userId, userId))
+      .orderBy(desc(eventCompletions.completedAt));
+  }
+
+  async getUnclaimedRewards(userId: string): Promise<EventCompletion[]> {
+    return await db
+      .select()
+      .from(eventCompletions)
+      .where(
+        and(
+          eq(eventCompletions.userId, userId),
+          eq(eventCompletions.rewardClaimed, false)
+        )
+      )
+      .orderBy(desc(eventCompletions.completedAt));
+  }
+
+  async claimReward(completionId: number): Promise<User> {
+    // Get the completion first
+    const [completion] = await db
+      .select()
+      .from(eventCompletions)
+      .where(eq(eventCompletions.id, completionId));
+
+    if (!completion || completion.rewardClaimed) {
+      throw new Error("Reward already claimed or completion not found");
+    }
+
+    // Mark reward as claimed
+    await db
+      .update(eventCompletions)
+      .set({ rewardClaimed: true })
+      .where(eq(eventCompletions.id, completionId));
+
+    // Award the SP points to the user
+    return await this.updateUserPoints(completion.userId, completion.spAwarded);
   }
 }
 

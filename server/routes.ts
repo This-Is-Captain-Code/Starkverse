@@ -391,6 +391,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Event completion and rewards endpoints
+  app.post("/api/events/:eventId/complete", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const eventId = parseInt(req.params.eventId);
+      const { performanceScore } = req.body;
+      
+      // Calculate SP reward based on performance (50-500 SP based on score)
+      const baseReward = 50;
+      const bonusReward = Math.floor((performanceScore / 100) * 450);
+      const spAwarded = baseReward + bonusReward;
+      
+      const completion = await storage.addEventCompletion({
+        eventId,
+        userId,
+        performanceScore,
+        spAwarded,
+      });
+      
+      res.json(completion);
+    } catch (error) {
+      console.error("Error recording event completion:", error);
+      res.status(500).json({ message: "Failed to record event completion" });
+    }
+  });
+
+  app.get("/api/rewards/unclaimed", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const rewards = await storage.getUnclaimedRewards(userId);
+      res.json(rewards);
+    } catch (error) {
+      console.error("Error fetching unclaimed rewards:", error);
+      res.status(500).json({ message: "Failed to fetch unclaimed rewards" });
+    }
+  });
+
+  app.post("/api/rewards/:completionId/claim", isAuthenticated, async (req: any, res) => {
+    try {
+      const completionId = parseInt(req.params.completionId);
+      const user = await storage.claimReward(completionId);
+      res.json({ claimed: true, newBalance: user.points });
+    } catch (error) {
+      console.error("Error claiming reward:", error);
+      res.status(500).json({ message: "Failed to claim reward" });
+    }
+  });
+
+  app.get("/api/rewards/history", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const completions = await storage.getUserCompletions(userId);
+      res.json(completions);
+    } catch (error) {
+      console.error("Error fetching reward history:", error);
+      res.status(500).json({ message: "Failed to fetch reward history" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
