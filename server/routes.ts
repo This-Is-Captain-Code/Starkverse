@@ -382,7 +382,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: "You are now a winner!",
         eventTitle: event?.title,
-        worldUrl: event?.worldUrl
+        worldUrl: event?.worldUrl,
+        eventId: eventId
       });
     } catch (error) {
       console.error("Error making winner:", error);

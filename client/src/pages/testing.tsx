@@ -44,10 +44,10 @@ export default function Testing() {
     mutationFn: async (eventId: number) => {
       return await apiRequest("POST", `/api/raffle/${eventId}/make-winner`);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "You're a Winner! 🎉",
-        description: `You can now access ${data.eventTitle}!`,
+        description: `You can now access ${data.eventTitle || 'the MetaHorizon event'}!`,
       });
       queryClient.invalidateQueries({ queryKey: [`/api/raffle/${data.eventId}/winner`] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
