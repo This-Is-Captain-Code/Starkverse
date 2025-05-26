@@ -158,8 +158,14 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updatedEntry;
     } else {
-      // Create new entry
-      const [newEntry] = await db.insert(raffleEntries).values(entry).returning();
+      // Create new entry with default entryCount
+      const [newEntry] = await db
+        .insert(raffleEntries)
+        .values({
+          ...entry,
+          entryCount: 1
+        })
+        .returning();
       return newEntry;
     }
   }
