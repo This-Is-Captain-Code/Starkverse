@@ -1,35 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import EventCard from "@/components/event-card";
 import CreateEventModal from "@/components/create-event-modal";
 import { useState } from "react";
 import { Rocket, Plus, Trophy } from "lucide-react";
 
 export default function Home() {
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const { data: events, isLoading: eventsLoading } = useQuery({
-    queryKey: ["/api/events"],
-  });
-
-  const { data: activeRaffles, isLoading: rafflesLoading } = useQuery({
-    queryKey: ["/api/raffles/active"],
-  });
-
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/stats"],
-  });
-
-  if (eventsLoading || rafflesLoading || statsLoading) {
-    return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading Starkverse...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-dark-bg text-white">
@@ -71,49 +46,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Events */}
-      <section id="featured-events" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Featured Events
-            </h2>
-            <p className="text-gray-400 text-lg">Premium virtual experiences waiting for you</p>
-          </div>
-          
-          {events && events.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {events.slice(0, 6).map((event: any) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <Trophy className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-400 mb-2">No Events Yet</h3>
-              <p className="text-gray-500 mb-6">Be the first to create an amazing virtual event!</p>
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/80 hover:to-secondary/80"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Your First Event
-              </Button>
-            </div>
-          )}
 
-          {events && events.length > 6 && (
-            <div className="text-center">
-              <Button 
-                variant="outline" 
-                className="border-primary/50 hover:border-primary px-8 py-3"
-              >
-                View All Events
-              </Button>
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* Quick Actions */}
       <section className="py-20 px-4">
