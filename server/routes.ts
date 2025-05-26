@@ -318,6 +318,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Refund all raffle entries for user (demo/testing)
+  app.post('/api/points/refund-entries', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get all user's raffle entries
+      const allRaffles = await storage.getActiveRaffles();
+      let totalRefund = 0;
+      
+      for (const raffle of allRaffles) {
+        const entries = await storage.getUserRaffleEntries(userId, raffle.id);
+        if (entries.length > 0) {
+          const event = await storage.getEvent(raffle.eventId);
+          if (event) {
+            const refundAmount = entries.reduce((sum, entry) => sum + (entry.entryCount * event.entryPoints), 0);
+            totalRefund += refundAmount;
+          }
+        }
+      }
+
+      if (totalRefund > 0) {
+        await storage.updateUserPoints(userId, user.points + totalRefund);
+        // Remove user's entries
+        await db.delete(raffleEntries).where(eq(raffleEntries.userId, userId));
+      }
+
+      res.json({ 
+        refunded: totalRefund,
+        newBalance: user.points + totalRefund 
+      });
+    } catch (error) {
+      console.error("Error refunding points:", error);
+      res.status(500).json({ message: "Failed to refund points" });
+    }
+  });
+
+  // Make user winner of specific raffle (demo/testing)
+  app.post('/api/raffle/:eventId/make-winner', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const eventId = parseInt(req.params.eventId);
+      
+      const raffle = await storage.getRaffleByEventId(eventId);
+      if (!raffle) {
+        return res.status(404).json({ message: "Raffle not found" });
+      }
+
+      // Check if user is already a winner
+      const existingWinners = await storage.getRaffleWinners(raffle.id);
+      const isAlreadyWinner = existingWinners.some(winner => winner.userId === userId);
+      
+      if (!isAlreadyWinner) {
+        await storage.addRaffleWinner(raffle.id, userId);
+      }
+
+      const event = await storage.getEvent(eventId);
+      res.json({ 
+        message: "You are now a winner!",
+        eventTitle: event?.title,
+        worldUrl: event?.worldUrl
+      });
+    } catch (error) {
+      console.error("Error making winner:", error);
+      res.status(500).json({ message: "Failed to make winner" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
