@@ -49,7 +49,8 @@ export default function Testing() {
         title: "You're a Winner! 🎉",
         description: `You can now access ${data.eventTitle || 'the MetaHorizon event'}!`,
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/raffle/${data.eventId}/winner`] });
+      // Force refresh all winner queries
+      queryClient.invalidateQueries({ queryKey: ["/api/raffle"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
     },
     onError: () => {
@@ -164,6 +165,21 @@ export default function Testing() {
               className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
             >
               {refundMutation.isPending ? "Refunding..." : "Refund All Entries"}
+            </Button>
+            <Button
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/raffle"] });
+                queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+                toast({
+                  title: "Refreshed!",
+                  description: "Winner status updated. Check the Events page.",
+                });
+              }}
+              variant="outline"
+              className="border-primary/50 text-primary hover:bg-primary/10"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Winner Status
             </Button>
           </div>
         </CardContent>
