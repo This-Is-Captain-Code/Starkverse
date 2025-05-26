@@ -40,6 +40,7 @@ function Router() {
             <Route path="/events" component={Events} />
             <Route path="/event/:id" component={EventDetails} />
             <Route path="/dashboard" component={Dashboard} />
+            <Route path="/rewards" component={Rewards} />
             <Route path="/testing" component={Testing} />
           </>
         )}
