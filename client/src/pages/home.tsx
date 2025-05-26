@@ -29,7 +29,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeIn" style={{animationDelay: '0.4s'}}>
             <Button 
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/80 hover:to-secondary/80 px-8 py-4 text-lg animate-glow"
-              onClick={() => document.getElementById('featured-events')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/events'}
             >
               <Rocket className="mr-2 h-5 w-5" />
               Explore Events
