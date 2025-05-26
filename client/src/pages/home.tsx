@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import EventCard from "@/components/event-card";
-import RaffleCard from "@/components/raffle-card";
 import CreateEventModal from "@/components/create-event-modal";
 import { useState } from "react";
-import { Rocket, Plus, Trophy, Users, Coins, TrendingUp } from "lucide-react";
+import { Rocket, Plus, Trophy } from "lucide-react";
 
 export default function Home() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -117,106 +115,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Active Raffles */}
-      <section className="py-20 px-4 bg-gradient-to-r from-dark-surface/30 to-dark-card/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-              Active Raffles
-            </h2>
-            <p className="text-gray-400 text-lg">Use your Starknet points to enter exclusive event raffles</p>
-          </div>
-
-          {activeRaffles && activeRaffles.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {activeRaffles.slice(0, 4).map((raffle: any) => (
-                <RaffleCard key={raffle.id} raffle={raffle} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <Coins className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-400 mb-2">No Active Raffles</h3>
-              <p className="text-gray-500">Check back soon for new raffle opportunities!</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Create Event CTA */}
+      {/* Quick Actions */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <Card className="bg-gradient-to-br from-dark-surface/50 to-dark-card/30 backdrop-blur-lg border-primary/20 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5"></div>
-            <CardContent className="relative z-10 p-12">
-              <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Ready to Create Your Event?
-              </h2>
-              <p className="text-xl text-gray-300 mb-8">
-                Host your own virtual metaverse experience and earn from ticket sales and sponsorships
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Plus className="text-primary text-2xl" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Upload Your World</h3>
-                  <p className="text-gray-400 text-sm">Connect Viveverse or Meta Horizon Worlds URLs</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Trophy className="text-secondary text-2xl" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Set Raffle Parameters</h3>
-                  <p className="text-gray-400 text-sm">Configure entry costs and winner selection</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="text-accent text-2xl" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Launch & Earn</h3>
-                  <p className="text-gray-400 text-sm">Go live and start earning from your events</p>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Button 
+              onClick={() => window.location.href = '/events'}
+              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 p-8 h-auto flex-col space-y-3"
+            >
+              <Trophy className="h-12 w-12" />
+              <div>
+                <h3 className="text-xl font-semibold">Browse Events</h3>
+                <p className="text-sm opacity-80">Enter raffles and win access to MetaHorizon worlds</p>
               </div>
-              
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/80 hover:to-secondary/80 px-8 py-4 text-lg animate-glow"
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                Create Your Event
-              </Button>
-            </CardContent>
-          </Card>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              variant="outline"
+              className="border-primary/50 hover:border-primary hover:bg-primary/10 p-8 h-auto flex-col space-y-3"
+            >
+              <Plus className="h-12 w-12" />
+              <div>
+                <h3 className="text-xl font-semibold">Create Event</h3>
+                <p className="text-sm opacity-80">Host your own virtual metaverse experience</p>
+              </div>
+            </Button>
+          </div>
         </div>
       </section>
-
-      {/* Stats Section */}
-      {stats && (
-        <section className="py-20 px-4 bg-gradient-to-r from-dark-surface/30 to-dark-card/20">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2">{stats.totalEvents.toLocaleString()}</div>
-                <div className="text-gray-400">Total Events</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-secondary mb-2">{stats.activeUsers.toLocaleString()}</div>
-                <div className="text-gray-400">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-accent mb-2">{(stats.pointsDistributed / 1000000).toFixed(1)}M</div>
-                <div className="text-gray-400">Points Distributed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-green-400 mb-2">{stats.raffleWinners.toLocaleString()}</div>
-                <div className="text-gray-400">Raffle Winners</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       <CreateEventModal open={showCreateModal} onOpenChange={setShowCreateModal} />
     </div>
